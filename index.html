@@ -4,41 +4,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Days Until Christmas</title>
+    <title>Christmas Flip Clock</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+
+        /* Styles for the flip clock card */
+        .flip-card {
+            background-color: #2b2b2b;
+            /* Dark gray from screenshot */
+            color: #f0f0f0;
+            font-size: 3.5rem;
+            /* Large font for the numbers */
+            font-weight: 700;
+            line-height: 1.2;
+            padding: 1.5rem 1rem;
+            border-radius: 0.75rem;
+            /* Rounded corners */
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+            min-width: 90px;
+            /* Ensure cards have a consistent width */
+            text-align: center;
+        }
+
+        /* The horizontal "flip" line */
+        .flip-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 2px;
+            background-color: #1a1a1a;
+            /* Darker line */
+            opacity: 0.7;
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 
-<body class="bg-transparent" style="background-color: #F9F8F7;">
+<body style="background-color: #E5E6EA;">
 
-    <div style="background-color: #F9F8F7;" class="p-6 w-full max-w-xs text-left">
-        <!-- Header -->
-        <header class="mb-4">
-            <h1 class="text-xl font-semibold text-gray-800">Christmas 🎄</h1>
-            <p id="target-date" class="text-sm text-gray-400"></p>
-        </header>
+    <!-- Main container for the combined widget -->
+    <div class="w-full max-w-md space-y-4">
 
-        <!-- Natural Language Countdown -->
-        <main>
-            <p id="countdown-text" class="text-2xl font-bold text-gray-700 leading-tight">
+        <!-- Top "Things 3" style bar -->
+        <div class="bg-neutral-800 p-4 rounded-xl shadow-lg flex items-center justify-between">
+            <h1 class="text-lg font-semibold text-neutral-100">Christmas 🎄</h1>
+            <p id="natural-countdown" class="text-lg text-neutral-300 font-medium">
                 <!-- JS will populate this -->
                 Loading...
             </p>
-        </main>
+        </div>
+
+        <!-- Flip Clock container -->
+        <div class="flex space-x-3 md:space-x-5 justify-center">
+
+            <!-- Days -->
+            <div class="text-center">
+                <div id="days" class="flip-card">00</div>
+                <span
+                    class="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider mt-2 block">Days</span>
+            </div>
+
+            <!-- Hours -->
+            <div class="text-center">
+                <div id="hours" class="flip-card">00</div>
+                <span
+                    class="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider mt-2 block">Hours</span>
+            </div>
+
+            <!-- Minutes -->
+            <div class="text-center">
+                <div id="minutes" class="flip-card">00</div>
+                <span
+                    class="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider mt-2 block">Minutes</span>
+            </div>
+
+            <!-- Seconds -->
+            <div class="text-center">
+                <div id="seconds" class="flip-card">00</div>
+                <span
+                    class="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider mt-2 block">Seconds</span>
+            </div>
+
+        </div>
     </div>
 
     <script>
-        const countdownTextEl = document.getElementById('countdown-text');
-        const targetDateEl = document.getElementById('target-date');
+        // Elements for the flip clock
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+
+        // Element for the natural language bar
+        const naturalCountdownEl = document.getElementById('natural-countdown');
 
         function updateCountdown() {
             const now = new Date();
@@ -48,42 +117,47 @@
             let christmasDate = new Date(currentYear, 11, 25);
 
             // If today's date is past December 25th, target next year's Christmas
-            if (now.getMonth() === 11 && now.getDate() > 25) {
+            if (now.getTime() > christmasDate.getTime()) {
                 christmasDate = new Date(currentYear + 1, 11, 25);
             }
 
-            // To accurately calculate the number of full days, we set the time to midnight for both dates
+            // --- Calculation for Flip Clock (precise) ---
+            const totalSeconds = (christmasDate - now) / 1000;
+
+            const days = Math.floor(totalSeconds / 3600 / 24);
+            const hours = Math.floor(totalSeconds / 3600) % 24;
+            const minutes = Math.floor(totalSeconds / 60) % 60;
+            const seconds = Math.floor(totalSeconds) % 60;
+
+            // Update the flip clock
+            daysEl.textContent = String(days).padStart(2, '0');
+            hoursEl.textContent = String(hours).padStart(2, '0');
+            minutesEl.textContent = String(minutes).padStart(2, '0');
+            secondsEl.textContent = String(seconds).padStart(2, '0');
+
+            // --- Calculation for Natural Language (days only) ---
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const christmasDay = new Date(christmasDate.getFullYear(), 11, 25);
-
             const timeDiff = christmasDay.getTime() - today.getTime();
             const daysLeft = Math.round(timeDiff / (1000 * 60 * 60 * 24));
 
             let message = '';
-            // Using a slightly accented color for the dynamic part, similar to Things 3 UI
-            const highlightClass = 'text-blue-600 font-semibold';
+            const highlightClass = 'text-sky-400 font-semibold';
 
             if (daysLeft === 0) {
-                message = `is <span class="${highlightClass}">Today!</span> 🎉`;
+                message = `<span class="${highlightClass}">Today!</span> 🎉`;
             } else if (daysLeft === 1) {
-                message = `is <span class="${highlightClass}">Tomorrow</span>`;
+                message = `<span class="${highlightClass}">Tomorrow</span>`;
             } else if (daysLeft > 1) {
-                message = `in <span class="${highlightClass}">${daysLeft}</span> days`;
-            } else {
-                // This case handles the time between Christmas passing and the new year starting
-                // At which point the logic will flip to the next year's countdown.
-                message = 'is here!';
+                message = `<span class="${highlightClass}">${daysLeft}</span> days`;
             }
 
-            countdownTextEl.innerHTML = message;
-
-            // Update the subtitle with the target date
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            targetDateEl.textContent = christmasDate.toLocaleDateString(undefined, options);
+            naturalCountdownEl.innerHTML = message;
         }
 
-        // Run the function when the page loads. No need for a continuous interval.
+        // Run the function immediately and then every second
         updateCountdown();
+        setInterval(updateCountdown, 1000);
     </script>
 </body>
 
